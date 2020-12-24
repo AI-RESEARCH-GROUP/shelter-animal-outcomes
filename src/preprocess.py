@@ -6,34 +6,39 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from src.util.util import proj_root_dir
-from torch.utils.data import Dataset, DataLoader
 
+
+def labelencoder(data):
+    def fill(col):
+        data[col] = data[col].astype('category')
+        data[col] = data[col].fillna("NA") if data.dtypes[col] == "object" else data[col].fillna(0)
+        data[col] = LabelEncoder().fit_transform(data[col])
+    map(fill, data.columns)
+    return data
+
+
+#     for i in [1,2,3,4,5]:
+#         y.append(i**2)
+#     print(y)
+# def square(x):  # 计算平方数
+#     print(x)
+#     return x ** 2
+#
+# y=map(square, [1, 2, 3, 4, 5])  # 计算列表各个元素的平方
+# # y1=map(lambda x: x ** 2, [1, 2, 3, 4, 5])  # 使用 lambda 匿名函数
+# print(y)
 
 def preprocess():
     train_df = pd.read_csv(proj_root_dir + "data/train.csv")
     test_df = pd.read_csv(proj_root_dir + "data/test.csv")
-    label = train_df['OutcomeType']
-    train_df = train_df.drop(columns= ['AnimalID', 'Name', 'DateTime', 'OutcomeSubtype', 'OutcomeType'])
+
+    train_df = train_df.drop(columns= ['AnimalID', 'Name', 'DateTime', 'OutcomeSubtype'])
     test_df = test_df.drop(columns= ['ID', 'Name', 'DateTime'])
-    total_df = train_df.append(test_df)
-    for col in total_df.columns:
-        if total_df.dtypes[col] == "object":
-            total_df[col] = total_df[col].fillna("NA")
-        else:
-            total_df[col] = total_df[col].fillna(0)
-        total_df[col] = LabelEncoder().fit_transform(total_df[col])
-    for col in total_df.columns:
-        total_df[col] = total_df[col].astype('category')
-    ani_list = total_df["AnimalType"].values
-    sex_list = total_df["SexuponOutcome"].values
-    age_list = total_df["AgeuponOutcome"].values
-    bre_list = total_df["Breed"].values
-    col_list = total_df["Color"].values
 
-    Y = LabelEncoder().fit_transform(label)
+    train_df = labelencoder(train_df)
+    test_df = labelencoder(test_df)
 
-    np.savez(proj_root_dir + 'data/all_data.npz', ani_list=ani_list, sex_list=sex_list, age_list=age_list, bre_list=bre_list, col_list=col_list)
-    np.savez(proj_root_dir + 'data/Y.npz', Y)
+    np.savez(proj_root_dir + 'data/all_data.npz', train_set=train_df.values, test_set=test_df.values)
 
 def main():
     preprocess()
