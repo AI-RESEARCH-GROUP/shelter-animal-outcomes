@@ -1,41 +1,50 @@
 import numpy as np
 from src.util.util import proj_root_dir
 from torch.utils.data.dataset import Dataset
+from src.args_and_config.config import config
+import math
+
+
+def train_validate_split(train_validate_data):
+    train_validate_ratio = config["train_validate_ratio"].split(":")
+
+    train_ratio = float(train_validate_ratio[0]) / (float(train_validate_ratio[0])
+                                                         + float(train_validate_ratio[1]))
+    validate_ratio = float(train_validate_ratio[1]) / (float(train_validate_ratio[0])
+                                                            + float(train_validate_ratio[1]))
+    n_train = math.floor(len(train_validate_data) * train_ratio)
+    n_train = n_train if n_train > 0 else 1
+    n_validate = math.floor(len(train_validate_data) * validate_ratio)
+    n_validate = n_validate if n_validate > 0 else 1
+
+    return n_train, n_validate
 
 
 def load_total_data():
-    all_data = np.load(proj_root_dir + 'data/all_data.npz')
-    Y_data = np.load(proj_root_dir + 'data/Y.npz')
 
-    ani_list = all_data["ani_list"]
-    sex_list = all_data["sex_list"]
-    age_list = all_data["age_list"]
-    bre_list = all_data["bre_list"]
-    col_list = all_data["col_list"]
+    all_data = np.load(proj_root_dir + 'data/all_data.npz')['total_df']
+    label_data = np.load(proj_root_dir + 'data/label.npz')['label']
+    train_validate_data = all_data[0:26729]
+    test_data = all_data[26729:]
+    return train_validate_data, test_data, label_data
 
 
-    return total_data
+train_validate_data, test_data, label_data = load_total_data()
+n_train, n_validate = train_validate_split(train_validate_data)
+n_test = len(test_data)
 
 
-total_data = load_total_data()
-n_train = 26729
-n_test = 11456
+# class MyDataset(Dataset):
+#     def __init__(self, ):
+#         super(MyDataset, self).__init__()
+#         self.start_index = 0
+#     def __getitem__(self, index):
+#         features = train_data[self.start_index + index]
+#         labels = label_data[self.start_index + index]
+#         return features, labels
 
 
-class MyDataset(Dataset):
-    def __init__(self, ):
-        super(MyDataset, self).__init__()
-        self.start_index = 0
-
-    def __getitem__(self, index):
-        features = total_data[self.start_index + index]['features']
-        labels = total_data[self.start_index + index]['labels']
-
-        return features, labels
-
-
-
-class TrainDataset(MyDataset):
+class TrainDataset(Dataset):
     def __init__(self):
         super(TrainDataset, self).__init__()
         self.start_index = 0
@@ -43,14 +52,36 @@ class TrainDataset(MyDataset):
     def __len__(self):
         return n_train
 
+    def __getitem__(self, index):
+        features = train_validate_data[self.start_index + index]
+        labels = label_data[self.start_index + index]
+        return features, labels
 
-class TestDataset(MyDataset):
+class ValidateDataset(Dataset):
     def __init__(self, ):
-        super(TestDataset, self).__init__()
+        super(ValidateDataset, self).__init__()
         self.start_index = n_train
 
     def __len__(self):
+        return n_validate
+
+    def __getitem__(self, index):
+        features = train_validate_data[self.start_index + index]
+        labels = label_data[self.start_index + index]
+        return features, labels
+
+
+class TestDataset(Dataset):
+    def __init__(self, ):
+        super(TestDataset, self).__init__()
+        self.start_index = 0
+
+    def __len__(self):
         return n_test
+
+    def __getitem__(self, index):
+        features = test_data[self.start_index + index]
+        return features
 
 
 def main():

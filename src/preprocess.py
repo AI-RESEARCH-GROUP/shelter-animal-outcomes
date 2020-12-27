@@ -6,34 +6,32 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from src.util.util import proj_root_dir
-from torch.utils.data import Dataset, DataLoader
 
 
 def preprocess():
+
+    ####读取csv文件
     train_df = pd.read_csv(proj_root_dir + "data/train.csv")
     test_df = pd.read_csv(proj_root_dir + "data/test.csv")
+
+    ####划分标签和特征，并删掉无用的数据
     label = train_df['OutcomeType']
     train_df = train_df.drop(columns= ['AnimalID', 'Name', 'DateTime', 'OutcomeSubtype', 'OutcomeType'])
     test_df = test_df.drop(columns= ['ID', 'Name', 'DateTime'])
     total_df = train_df.append(test_df)
+
+    ####处理数据(填充缺失值并标签化)
     for col in total_df.columns:
-        if total_df.dtypes[col] == "object":
-            total_df[col] = total_df[col].fillna("NA")
-        else:
-            total_df[col] = total_df[col].fillna(0)
+        total_df[col] = total_df[col].fillna("NA") if total_df.dtypes[col] == "object" else total_df[col].fillna(0)
         total_df[col] = LabelEncoder().fit_transform(total_df[col])
-    for col in total_df.columns:
         total_df[col] = total_df[col].astype('category')
-    ani_list = total_df["AnimalType"].values
-    sex_list = total_df["SexuponOutcome"].values
-    age_list = total_df["AgeuponOutcome"].values
-    bre_list = total_df["Breed"].values
-    col_list = total_df["Color"].values
+    total_df = total_df.values  ##values将DataFrame转为ndarray
+    label = LabelEncoder().fit_transform(label)
 
-    Y = LabelEncoder().fit_transform(label)
+    ####保存处理好的特征数据和标签
+    np.savez(proj_root_dir + 'data/all_data.npz', total_df = total_df)
+    np.savez(proj_root_dir + 'data/label.npz', label = label)
 
-    np.savez(proj_root_dir + 'data/all_data.npz', ani_list=ani_list, sex_list=sex_list, age_list=age_list, bre_list=bre_list, col_list=col_list)
-    np.savez(proj_root_dir + 'data/Y.npz', Y)
 
 def main():
     preprocess()

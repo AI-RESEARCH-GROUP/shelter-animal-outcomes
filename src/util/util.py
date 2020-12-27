@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 
 
-
+def file_exists(file_path):
+    return os.path.exists(file_path)
 
 
 def compute_root_dir():

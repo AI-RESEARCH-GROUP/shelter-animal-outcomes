@@ -1,1 +1,5 @@
 .idea
+*.pth
+*.npz
+*.pyc
+__pycache
