@@ -27,9 +27,9 @@ def save_model_parameters(model):
 
 def train():
 
-    cuda = False
-    # if args.gpu < 0:
-    #     cuda = False
+    cuda = True
+    if args.gpu < 0:
+        cuda = False
 
 
     model = ShelterOutcomeModel()
@@ -42,10 +42,10 @@ def train():
 
 
     train_dataset = TrainDataset()
-    train_dataloader = DataLoader(train_dataset, batch_size=1)
+    train_dataloader = DataLoader(train_dataset, batch_size=10)
 
     validate_dataset = ValidateDataset()
-    validate_dataloader = DataLoader(validate_dataset, batch_size=1,)
+    validate_dataloader = DataLoader(validate_dataset, batch_size=10,)
 
 
     loss_func = nn.L1Loss()

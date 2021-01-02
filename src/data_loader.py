@@ -22,26 +22,14 @@ def train_validate_split(train_validate_data):
 
 def load_total_data():
 
-    all_data = np.load(proj_root_dir + 'data/all_data.npz')['total_df']
-    label_data = np.load(proj_root_dir + 'data/label.npz')['label']
-    train_validate_data = all_data[0:26729]
-    test_data = all_data[26729:]
-    return train_validate_data, test_data, label_data
+    train_validate_data = np.load(proj_root_dir + 'data/all_data.npz')['train_df']
+    test_data = np.load(proj_root_dir + 'data/all_data.npz')['test_df']
+    return train_validate_data, test_data
 
 
-train_validate_data, test_data, label_data = load_total_data()
+train_validate_data, test_data = load_total_data()
 n_train, n_validate = train_validate_split(train_validate_data)
 n_test = len(test_data)
-
-
-# class MyDataset(Dataset):
-#     def __init__(self, ):
-#         super(MyDataset, self).__init__()
-#         self.start_index = 0
-#     def __getitem__(self, index):
-#         features = train_data[self.start_index + index]
-#         labels = label_data[self.start_index + index]
-#         return features, labels
 
 
 class TrainDataset(Dataset):
@@ -53,8 +41,8 @@ class TrainDataset(Dataset):
         return n_train
 
     def __getitem__(self, index):
-        features = train_validate_data[self.start_index + index]
-        labels = label_data[self.start_index + index]
+        features = train_validate_data[self.start_index + index][1:]
+        labels = train_validate_data[self.start_index + index][0]
         return features, labels
 
 class ValidateDataset(Dataset):
@@ -66,8 +54,8 @@ class ValidateDataset(Dataset):
         return n_validate
 
     def __getitem__(self, index):
-        features = train_validate_data[self.start_index + index]
-        labels = label_data[self.start_index + index]
+        features = train_validate_data[self.start_index + index][1:]
+        labels = train_validate_data[self.start_index + index][0]
         return features, labels
 
 

@@ -6,7 +6,7 @@ class ShelterOutcomeModel(nn.Module):
         super(ShelterOutcomeModel, self).__init__()
         self.lin1 = nn.Linear(5, 200)
         self.lin2 = nn.Linear(200, 70)
-        self.lin3 = nn.Linear(70, 5)
+        self.lin3 = nn.Linear(70, 1)
         self.relu = nn.ReLU()
 
     def forward(self, x):
