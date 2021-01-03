@@ -34,7 +34,7 @@ def train():
 
     model = ShelterOutcomeModel()
     if cuda:
-        model.cuda()
+        model.to(args.gpu)
 
     for param in model.parameters():
         print(param)
